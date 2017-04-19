@@ -7,7 +7,7 @@ import firebase from 'firebase';
 
 class Login extends Component {
   componentDidMount() {
-    const { store } = this.props;
+    const { store } = this.context;
     this.unsubscribe = store.subscribe(() =>
       this.forceUpdate()
     );
@@ -27,7 +27,7 @@ class Login extends Component {
   }
 
   render() {
-    const { store } = this.props;
+    const { store } = this.context;
     const state = store.getState();
 
     return (
@@ -65,7 +65,7 @@ class Login extends Component {
   }
 
   handleUsernameChange(_, newValue) {
-    const { store } = this.props;
+    const { store } = this.context;
     store.dispatch({
       type: 'SET_USERNAME',
       username: newValue
@@ -73,7 +73,7 @@ class Login extends Component {
   }
 
   handlePasswordChange(_, newValue) {
-    const { store } = this.props;
+    const { store } = this.context;
     store.dispatch({
       type: 'SET_PASSWORD',
       password: newValue
@@ -82,7 +82,7 @@ class Login extends Component {
 
   handleSubmit(event) {
     event.preventDefault(); // Prevent refreshing of page
-    const { store } = this.props;
+    const { store } = this.context;
     const state = store.getState();
     firebase.auth().signInWithEmailAndPassword(
         state.loginStatus.username.value,
@@ -92,7 +92,7 @@ class Login extends Component {
   }
 
   updateErrorMessage(errorCode) {
-    const { store } = this.props;
+    const { store } = this.context;
     if (errorCode === 'auth/user-not-found') {
       store.dispatch({
         type: 'SET_USERNAME_ERROR',
@@ -112,4 +112,7 @@ class Login extends Component {
   }
 }
 
+Login.contextTypes = {
+  store: React.PropTypes.object
+};
 export default Login;

@@ -13,7 +13,7 @@ class CustomerOverview extends Component {
   }
 
   componentDidMount() {
-    const { store } = this.props;
+    const { store } = this.context;
     this.unsubscribe = store.subscribe(() =>
       this.forceUpdate()
     );
@@ -28,7 +28,7 @@ class CustomerOverview extends Component {
   }
 
   handleCustomersUpdated(snapshot) {
-    const { store } = this.props;
+    const { store } = this.context;
     store.dispatch({
       type: 'SET_CUSTOMERS',
       customers: snapshot.val()
@@ -36,7 +36,7 @@ class CustomerOverview extends Component {
   }
 
   render() {
-    const { store } = this.props;
+    const { store } = this.context;
     const state = store.getState();
     return (
       <div>
@@ -73,4 +73,7 @@ class CustomerOverview extends Component {
   }
 }
 
+CustomerOverview.contextTypes = {
+  store: React.PropTypes.object
+};
 export default CustomerOverview;

@@ -25,7 +25,7 @@ firebase.initializeApp({
 
 class App extends Component {
   componentDidMount() {
-    const { store } = this.props;
+    const { store } = this.context;
     this.unsubscribe = store.subscribe(() =>
       this.forceUpdate()
     );
@@ -44,7 +44,7 @@ class App extends Component {
   }
 
   render() {
-    const { store } = this.props;
+    const { store } = this.context;
     const state = store.getState();
 
     return (
@@ -68,7 +68,7 @@ class App extends Component {
   }
 
   handleLogout() {
-    const { store } = this.props;
+    const { store } = this.context;
     firebase.auth().signOut().then(() => {
       store.dispatch({type: 'LOG_OUT'});
     });
@@ -76,11 +76,14 @@ class App extends Component {
 
   renderContent(state) {
     if (state.loginStatus.isLoggedIn) {
-      return <CustomerOverview store={this.props.store} />
+      return <CustomerOverview />
     } else {
-      return <Login store={this.props.store} />
+      return <Login />
     }
   }
 }
 
+App.contextTypes = {
+  store: React.PropTypes.object
+};
 export default App;
