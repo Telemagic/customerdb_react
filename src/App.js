@@ -24,11 +24,19 @@ firebase.initializeApp({
 });
 
 class App extends Component {
+  componentDidMount() {
+    const { store } = this.props;
+    this.unsubscribe = store.subscribe(() =>
+      this.forceUpdate()
+    );
+  };
+
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
+
   constructor(props, context) {
     super(props, context);
-    this.state = {
-      isLoggedIn: false
-    };
 
     this.renderAppBarRightElement = this.renderAppBarRightElement.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
@@ -36,37 +44,41 @@ class App extends Component {
   }
 
   render() {
+    const { store } = this.props;
+    const state = store.getState();
+
     return (
       <MuiThemeProvider>
         <div>
           <AppBar
             title="Telemagic Customer Viewer"
             showMenuIconButton={false}
-            iconElementRight={this.renderAppBarRightElement()}
+            iconElementRight={this.renderAppBarRightElement(state)}
           />
-          {this.renderContent()}
+          {this.renderContent(state)}
         </div>
       </MuiThemeProvider>
     );
   }
 
-  renderAppBarRightElement() {
-    if (this.state.isLoggedIn) {
+  renderAppBarRightElement(state) {
+    if (state.loginStatus.isLoggedIn) {
       return <FlatButton label="Logout" onTouchTap={this.handleLogout} />
     }
   }
 
   handleLogout() {
+    const { store } = this.props;
     firebase.auth().signOut().then(() => {
-      this.setState({isLoggedIn: false});
-    })
+      store.dispatch({type: 'LOG_OUT'});
+    });
   }
 
-  renderContent() {
-    if (this.state.isLoggedIn) {
-      return <CustomerOverview />
+  renderContent(state) {
+    if (state.loginStatus.isLoggedIn) {
+      return <CustomerOverview store={this.props.store} />
     } else {
-      return <Login onLoginSuccess={() => this.setState({isLoggedIn: true})} />
+      return <Login store={this.props.store} />
     }
   }
 }

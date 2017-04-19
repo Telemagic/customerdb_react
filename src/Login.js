@@ -6,18 +6,19 @@ import TextField from 'material-ui/TextField';
 import firebase from 'firebase';
 
 class Login extends Component {
+  componentDidMount() {
+    const { store } = this.props;
+    this.unsubscribe = store.subscribe(() =>
+      this.forceUpdate()
+    );
+  };
+
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
+
   constructor(props, context) {
     super(props, context);
-    this.state = {
-      username: {
-        value: '',
-        errors: undefined
-      },
-      password: {
-        value: '',
-        errors: undefined
-      }
-    };
 
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleUsernameChange = this.handleUsernameChange.bind(this);
@@ -26,15 +27,18 @@ class Login extends Component {
   }
 
   render() {
+    const { store } = this.props;
+    const state = store.getState();
+
     return (
         <form onSubmit={this.handleSubmit}>
           <div>
             <div className="valign">
               <i className="material-icons md-36">perm_identity</i>
               <TextField floatingLabelText="Username"
-                         value={this.state.username.value}
+                         value={state.loginStatus.username.value}
                          onChange={this.handleUsernameChange}
-                         errorText={this.state.username.errors} />
+                         errorText={state.loginStatus.username.errors} />
             </div>
           </div>
           <div>
@@ -42,9 +46,9 @@ class Login extends Component {
               <i className="material-icons md-36">lock_outline</i>
               <TextField floatingLabelText="Password"
                          type="password"
-                         value={this.state.password.value}
+                         value={state.loginStatus.password.value}
                          onChange={this.handlePasswordChange}
-                         errorText={this.state.password.errors} />
+                         errorText={state.loginStatus.password.errors} />
             </div>
           </div><br />
 
@@ -61,50 +65,48 @@ class Login extends Component {
   }
 
   handleUsernameChange(_, newValue) {
-    this.setState({
-      username: {
-        value: newValue
-      }
+    const { store } = this.props;
+    store.dispatch({
+      type: 'SET_USERNAME',
+      username: newValue
     });
   }
 
   handlePasswordChange(_, newValue) {
-    this.setState({
-      password: {
-        value: newValue
-      }
+    const { store } = this.props;
+    store.dispatch({
+      type: 'SET_PASSWORD',
+      password: newValue
     });
   }
 
   handleSubmit(event) {
     event.preventDefault(); // Prevent refreshing of page
-
-    firebase.auth().signInWithEmailAndPassword(this.state.username.value, this.state.password.value)
-      .then(() => {
-        if (this.props.onLoginSuccess) {
-          this.props.onLoginSuccess();
-        }
-      })
-      .catch(error => {
-        this.updateErrorMessage(error.code);
-        if (this.props.onLoginError) {
-          this.props.onLoginError(error);
-        }
-      });
+    const { store } = this.props;
+    const state = store.getState();
+    firebase.auth().signInWithEmailAndPassword(
+        state.loginStatus.username.value,
+        state.loginStatus.password.value)
+      .then(() => store.dispatch({type: 'LOG_IN'}))
+      .catch(error => this.updateErrorMessage(error.code));
   }
 
   updateErrorMessage(errorCode) {
+    const { store } = this.props;
     if (errorCode === 'auth/user-not-found') {
-      this.setState({
-        username: Object.assign({}, this.state.username, { errors: 'User not found' })
+      store.dispatch({
+        type: 'SET_USERNAME_ERROR',
+        msg: 'User not found'
       });
     } else if (errorCode === 'auth/invalid-email') {
-      this.setState({
-        username: Object.assign({}, this.state.username, { errors: 'Invalid email' })
+      store.dispatch({
+        type: 'SET_USERNAME_ERROR',
+        msg: 'Invalid email'
       });
     } else if (errorCode === 'auth/wrong-password') {
-      this.setState({
-        password: Object.assign({}, this.state.password, { errors: 'Wrong password' })
+      store.dispatch({
+        type: 'SET_PASSWORD_ERROR',
+        msg: 'Wrong password'
       });
     }
   }
