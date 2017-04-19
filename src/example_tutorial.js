@@ -120,21 +120,15 @@ const Footer = () => (
   <p>
     Show:
     {' '}
-    <FilterLink
-      filter='SHOW_ALL'
-    >
+    <FilterLink filter='SHOW_ALL'>
       All
     </FilterLink>
     {', '}
-    <FilterLink
-      filter='SHOW_ACTIVE'
-    >
+    <FilterLink filter='SHOW_ACTIVE'>
       Active
     </FilterLink>
     {', '}
-    <FilterLink
-      filter='SHOW_COMPLETED'
-    >
+    <FilterLink filter='SHOW_COMPLETED'>
       Completed
     </FilterLink>
   </p>
@@ -264,21 +258,7 @@ const TodoApp = () => (
   </div>
 );
 
-class Provider extends Component {
-  getChildContext() {
-    return {
-      store: this.props.store
-    };
-  }
-
-  render() {
-    return this.props.children;
-  }
-}
-Provider.childContextTypes = {
-  store: React.PropTypes.object
-};
-
+const { Provider } = ReactRedux;
 const { createStore } = Redux;
 
 ReactDOM.render(
