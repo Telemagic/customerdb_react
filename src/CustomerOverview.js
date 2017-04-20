@@ -7,27 +7,37 @@ import firebase from 'firebase';
 class CustomerOverview extends Component {
   constructor(props, context) {
     super(props, context);
-    this.state = {
-      customers: []
-    };
 
     this.handleCustomersUpdated = this.handleCustomersUpdated.bind(this);
     CustomerOverview.renderCustomerRow = CustomerOverview.renderCustomerRow.bind(this);
   }
 
   componentDidMount() {
+    const { store } = this.context;
+    this.unsubscribe = store.subscribe(() =>
+      this.forceUpdate()
+    );
+
     var ref = firebase.database().ref('customers');
     ref.once('value').then(this.handleCustomersUpdated);
     ref.on('value').then(this.handleCustomersUpdated);
   }
 
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
+
   handleCustomersUpdated(snapshot) {
-    this.setState({
+    const { store } = this.context;
+    store.dispatch({
+      type: 'SET_CUSTOMERS',
       customers: snapshot.val()
     });
   }
 
   render() {
+    const { store } = this.context;
+    const state = store.getState();
     return (
       <div>
         <Table>
@@ -40,7 +50,7 @@ class CustomerOverview extends Component {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {this.state.customers.map(CustomerOverview.renderCustomerRow)}
+            {state.customersState.customers.map(CustomerOverview.renderCustomerRow)}
           </TableBody>
         </Table>
       </div>
@@ -63,4 +73,7 @@ class CustomerOverview extends Component {
   }
 }
 
+CustomerOverview.contextTypes = {
+  store: React.PropTypes.object
+};
 export default CustomerOverview;
